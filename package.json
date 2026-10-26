@@ -24,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/empty-room/empty-room.git"
+    "url": "https://github.com/Tech-no-guy/empty-room.git"
   },
   "engines": {
     "node": ">=16.0.0"

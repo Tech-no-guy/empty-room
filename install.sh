@@ -2,14 +2,14 @@
 # ==============================================================================
 # Empty Room — Unix Installer (Linux & macOS)
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/empty-room/empty-room/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Tech-no-guy/empty-room/main/install.sh | bash
 # ==============================================================================
 
 set -e
 
 echo ""
 echo "======================================================="
-echo "   EMPTY ROOM - WORKSTATION PRESENCE SENTINEL"
+echo "   EMPTY ROOM - SMART SCREEN LOCK"
 echo "   Linux / macOS Automated Installer"
 echo "======================================================="
 echo ""
@@ -53,7 +53,7 @@ if [ -d "$SCRIPT_DIR/core" ]; then
 else
   # Clone or download if run via pipe
   TEMP_ZIP="$INSTALL_DIR/repo.zip"
-  curl -sSL "https://github.com/empty-room/empty-room/archive/refs/heads/main.zip" -o "$TEMP_ZIP"
+  curl -sSL "https://github.com/Tech-no-guy/empty-room/archive/refs/heads/main.zip" -o "$TEMP_ZIP"
   unzip -q -o "$TEMP_ZIP" -d "$INSTALL_DIR"
   rm -f "$TEMP_ZIP"
   mv "$INSTALL_DIR/empty-room-main" "$APP_DIR"

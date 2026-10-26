@@ -1,7 +1,7 @@
 # ==============================================================================
 # Empty Room — Smart Screen Lock PowerShell Installer (iex compatible)
 # Usage:
-#   irm https://raw.githubusercontent.com/empty-room/empty-room/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/Tech-no-guy/empty-room/main/install.ps1 | iex
 # or locally:
 #   iex (Get-Content ./install.ps1 -Raw)
 # ==============================================================================
@@ -55,7 +55,7 @@ if ($CurrentScriptDir -and (Test-Path (Join-Path $CurrentScriptDir "core"))) {
     Copy-Item -Recurse -Force -Path (Join-Path $CurrentScriptDir "*") -Destination $AppDir
 } else {
     Write-Host "      Downloading latest release from GitHub..." -ForegroundColor Gray
-    $ZipUrl = "https://github.com/empty-room/empty-room/archive/refs/heads/main.zip"
+    $ZipUrl = "https://github.com/Tech-no-guy/empty-room/archive/refs/heads/main.zip"
     $ZipPath = Join-Path $InstallDir "repo.zip"
     Invoke-WebRequest -Uri $ZipUrl -OutFile $ZipPath
     Expand-Archive -Path $ZipPath -DestinationPath $InstallDir -Force

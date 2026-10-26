@@ -40,13 +40,13 @@ npm install -g empty-room
 
 ### 2. Install via PowerShell (Windows one-liner)
 ```powershell
-irm https://raw.githubusercontent.com/empty-room/empty-room/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Tech-no-guy/empty-room/main/install.ps1 | iex
 ```
 *(Or locally: `iex (Get-Content ./install.ps1 -Raw)`)*
 
 ### 3. Install via Shell (Linux & macOS)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/empty-room/empty-room/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Tech-no-guy/empty-room/main/install.sh | bash
 ```
 
 ### 4. Install via Python
