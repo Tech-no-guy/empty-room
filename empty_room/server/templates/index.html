@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empty Room — Enterprise Workstation Security</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-csrf="{{ csrf_token }}">
+  <!-- Top Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="logo-container" title="Empty Room Doorway">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Empty Room Logo" class="brand-logo" width="36" height="36">
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">EMPTY ROOM</span>
+        <span class="brand-sub">Presence Sentinel</span>
+      </div>
+      <span class="badge-version">v1.0.0</span>
+    </div>
+
+    <div class="nav-telemetry">
+      <div class="live-indicator-pill" id="livePill">
+        <span class="pulse-dot"></span>
+        <span id="liveStatusText">CONNECTING...</span>
+      </div>
+      <a href="https://github.com" target="_blank" rel="noopener" class="nav-github-link" title="GitHub Repository">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <main class="dashboard-grid">
+    <!-- Left Column: Vision & Live Feed -->
+    <section class="card vision-card">
+      <div class="card-header">
+        <div class="header-with-icon">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          <h3>Optical Feed</h3>
+        </div>
+        <div class="stream-controls">
+          <span class="fps-pill" id="fpsDisplay">-- FPS</span>
+          <button id="toggleStreamBtn" class="btn-icon" title="Toggle Stream Pause">
+            <svg id="streamIcon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"/>
+              <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="video-container" id="videoContainer">
+        <img id="liveFeedImg" src="/video_feed" alt="Live Camera Feed" class="live-stream-img">
+        <div class="video-overlay-banner" id="overlayBanner">
+          <span id="overlayText">MONITORING</span>
+        </div>
+        <div class="stream-placeholder hidden" id="streamPlaceholder">
+          <p>Stream Paused</p>
+          <button id="resumeStreamBtn" class="btn-secondary btn-sm">Resume Video</button>
+        </div>
+      </div>
+
+      <div class="vision-footer">
+        <div class="telemetry-chip">
+          <span class="chip-label">Faces:</span>
+          <span class="chip-value" id="faceCountDisplay">0</span>
+        </div>
+        <div class="telemetry-chip">
+          <span class="chip-label">Camera Dev:</span>
+          <span class="chip-value">#<span id="camIndexDisplay">{{ config.camera_index }}</span></span>
+        </div>
+        <div class="telemetry-chip">
+          <span class="chip-label">Resolution:</span>
+          <span class="chip-value">{{ config.resolution_width }}x{{ config.resolution_height }}</span>
+        </div>
+      </div>
+
+      <!-- Quick Action: Test Workstation Lock -->
+      <div class="action-box">
+        <div class="action-desc">
+          <h4>Test Lock Mechanism</h4>
+          <p>Verify that your system screen locks cleanly before deployment.</p>
+        </div>
+        <button id="testLockBtn" class="btn-warning">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Test Lock
+        </button>
+      </div>
+    </section>
+
+    <!-- Right Column: Security Telemetry & Controls -->
+    <div class="right-stack">
+      <!-- Status Card -->
+      <section class="card status-card">
+        <div class="card-header">
+          <div class="header-with-icon">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <h3>Presence Sentinel</h3>
+          </div>
+          <span class="status-badge" id="stateBadge">INITIALIZING</span>
+        </div>
+
+        <div class="status-body">
+          <div class="countdown-widget">
+            <div class="countdown-circle">
+              <svg class="progress-ring" width="110" height="110">
+                <circle class="progress-ring__bg" stroke-width="8" fill="transparent" r="46" cx="55" cy="55"/>
+                <circle class="progress-ring__circle" id="countdownCircle" stroke-width="8" stroke-dasharray="289" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" r="46" cx="55" cy="55"/>
+              </svg>
+              <div class="countdown-number">
+                <span id="secondsLeftDisplay">--</span>
+                <small>SEC</small>
+              </div>
+            </div>
+            <div class="countdown-text">
+              <h4 id="statusTitle">Checking Room Status</h4>
+              <p id="statusSubtitle">Camera active. Sentinel watching threshold.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Biometric Face Enrollment Card -->
+      <section class="card biometric-card">
+        <div class="card-header">
+          <div class="header-with-icon">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <h3>Biometric Profile</h3>
+          </div>
+          <span class="bio-badge" id="bioBadge">{{ 'REGISTERED' if face_info.trained else 'UNREGISTERED' }}</span>
+        </div>
+
+        <div class="bio-content">
+          <div class="bio-info-grid">
+            <div class="bio-metric">
+              <span class="metric-title">Trained Samples</span>
+              <span class="metric-val" id="bioSampleCount">{{ face_info.samples_count }}</span>
+            </div>
+            <div class="bio-metric">
+              <span class="metric-title">Enrollment Date</span>
+              <span class="metric-val" id="bioEnrollDate">{{ face_info.enrolled_at[:10] if face_info.enrolled_at else 'None' }}</span>
+            </div>
+            <div class="bio-metric">
+              <span class="metric-title">Matching Mode</span>
+              <span class="metric-val" id="matchModeDisplay">{{ 'Strict (Face ID)' if config.strict_match else 'Presence (Any)' }}</span>
+            </div>
+          </div>
+
+          <div class="bio-actions">
+            <button id="enrollFaceBtn" class="btn-primary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              <span>{{ 'Re-train Face Profile' if face_info.trained else 'Register Face Profile' }}</span>
+            </button>
+            {% if face_info.trained %}
+            <button id="deleteFaceBtn" class="btn-danger-outline" title="Delete face biometric data">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Card -->
+      <section class="card settings-card">
+        <div class="card-header">
+          <div class="header-with-icon">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <h3>Security Parameters</h3>
+          </div>
+        </div>
+
+        <form id="settingsForm" class="settings-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+          <!-- Enabled Toggle -->
+          <div class="form-row">
+            <div class="row-info">
+              <label for="enabledToggle">Auto-Lock Sentinel</label>
+              <span class="row-sub">Arm or disarm the background workstation auto-lock mechanism</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="enabledToggle" name="enabled" {{ 'checked' if config.enabled }}>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Strict Match Toggle -->
+          <div class="form-row">
+            <div class="row-info">
+              <label for="strictMatchToggle">Strict Match (Your Face Only)</label>
+              <span class="row-sub">Lock if any other person sits at your desk</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="strictMatchToggle" name="strict_match" {{ 'checked' if config.strict_match }}>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Timeout Slider -->
+          <div class="form-group">
+            <div class="group-header">
+              <label for="timeoutSlider">Lock Delay Timeout</label>
+              <span class="param-val" id="timeoutValText">{{ config.timeout }} seconds</span>
+            </div>
+            <div class="slider-with-input">
+              <input type="range" id="timeoutSlider" min="3" max="180" step="1" value="{{ config.timeout }}" class="range-slider">
+              <input type="number" id="timeoutInput" name="timeout" min="3" max="3600" value="{{ config.timeout }}" class="num-input">
+            </div>
+            <small class="help-text">Elapsed time after presence loss before executing screen lock.</small>
+          </div>
+
+          <!-- Confidence Threshold -->
+          <div class="form-group">
+            <div class="group-header">
+              <label for="confSlider">Strictness Threshold</label>
+              <span class="param-val" id="confValText">{{ config.confidence_threshold }}</span>
+            </div>
+            <div class="slider-with-input">
+              <input type="range" id="confSlider" min="30" max="120" step="5" value="{{ config.confidence_threshold }}" class="range-slider">
+              <input type="number" id="confInput" name="confidence_threshold" min="30" max="150" value="{{ config.confidence_threshold }}" class="num-input">
+            </div>
+            <small class="help-text">LBPH distance threshold (lower = stricter biometric matching).</small>
+          </div>
+
+          <!-- Hardware Device Index -->
+          <div class="form-row">
+            <div class="row-info">
+              <label for="camSelect">Webcam Index</label>
+              <span class="row-sub">Select physical camera index (0 is standard integrated webcam)</span>
+            </div>
+            <select id="camSelect" name="camera_index" class="select-input">
+              <option value="0" {{ 'selected' if config.camera_index == 0 }}>Camera 0 (Default)</option>
+              <option value="1" {{ 'selected' if config.camera_index == 1 }}>Camera 1</option>
+              <option value="2" {{ 'selected' if config.camera_index == 2 }}>Camera 2</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="saveSettingsBtn" class="btn-primary w-full">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Save Configuration
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Audit Event Log Section -->
+  <section class="card audit-card">
+    <div class="card-header">
+      <div class="header-with-icon">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <h3>Audit & Activity Log</h3>
+      </div>
+      <button id="refreshLogsBtn" class="btn-text">Refresh</button>
+    </div>
+    <div class="log-stream-wrapper">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th width="120">Timestamp</th>
+            <th width="120">Category</th>
+            <th>Event Details</th>
+          </tr>
+        </thead>
+        <tbody id="logsTableBody">
+          <tr><td colspan="3" class="text-center text-muted">Awaiting telemetry logs...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Face Enrollment Modal -->
+  <div class="modal-backdrop hidden" id="enrollModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="header-with-icon">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          </svg>
+          <h3>Face Enrollment Wizard</h3>
+        </div>
+        <button id="closeEnrollModalBtn" class="btn-icon">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-instruction">Look straight at your webcam. Gently turn your head slightly left and right to allow the system to sample different facial angles.</p>
+        
+        <div class="enroll-preview-frame">
+          <div class="face-target-reticle"></div>
+          <div class="enroll-badge" id="enrollSampleBadge">Samples: 0 / 50</div>
+        </div>
+
+        <div class="enroll-progress-container">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="enrollProgressBar" style="width: 0%;"></div>
+          </div>
+          <span class="progress-text" id="enrollProgressText">Ready to capture...</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelEnrollBtn" class="btn-secondary">Cancel</button>
+        <button id="startCaptureBtn" class="btn-primary">Start Sampling</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Lock Confirmation Modal with 5-Second Safety Abort -->
+  <div class="modal-backdrop hidden" id="lockConfirmModal">
+    <div class="modal-box text-center">
+      <div class="modal-icon-header">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#f59e0b" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h3>Testing Workstation Lock</h3>
+      <p>Your workstation will be locked in <strong id="abortSeconds">5</strong> seconds.</p>
+      <div class="modal-footer justify-center">
+        <button id="abortLockBtn" class="btn-secondary">Abort Test</button>
+        <button id="instantLockBtn" class="btn-warning">Lock Immediately</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

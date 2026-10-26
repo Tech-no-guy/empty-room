@@ -1,0 +1,44 @@
+{
+  "name": "empty-room",
+  "version": "1.0.0",
+  "description": "Enterprise workstation presence detection and auto-lock sentinel.",
+  "main": "./bin/empty-room.js",
+  "bin": {
+    "empty-room": "./bin/empty-room.js"
+  },
+  "scripts": {
+    "start": "node ./bin/empty-room.js run",
+    "configure": "node ./bin/empty-room.js configure run",
+    "stop": "node ./bin/empty-room.js stop",
+    "test": "python -m unittest discover -s tests"
+  },
+  "keywords": [
+    "presence-detection",
+    "workstation-security",
+    "auto-lock",
+    "computer-vision",
+    "face-recognition",
+    "enterprise-security",
+    "sentinel"
+  ],
+  "author": "Empty Room Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/empty-room/empty-room.git"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "bin",
+    "empty_room",
+    "data",
+    "assets",
+    "requirements.txt",
+    "install.ps1",
+    "install.sh",
+    "README.md",
+    "LICENSE"
+  ]
+}

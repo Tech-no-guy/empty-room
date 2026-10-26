@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "timeout": 20,
+  "strict_match": true,
+  "confidence_threshold": 75,
+  "camera_index": 0,
+  "frame_skip": 5,
+  "resolution_width": 320,
+  "resolution_height": 240,
+  "web_port": 5050,
+  "web_host": "127.0.0.1",
+  "grace_period_alert": true
+}

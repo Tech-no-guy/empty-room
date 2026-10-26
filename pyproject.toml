@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "empty-room"
+version = "1.0.0"
+description = "Enterprise workstation presence detection and auto-lock sentinel."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Empty Room Contributors" }]
+requires-python = ">=3.8"
+keywords = ["security", "presence-detection", "auto-lock", "computer-vision", "face-recognition"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Security",
+]
+dependencies = [
+    "opencv-contrib-python>=4.8.0",
+    "numpy>=1.24.0",
+    "Flask>=3.0.0",
+    "Werkzeug>=3.0.0",
+]
+
+[project.scripts]
+empty-room = "empty_room.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["empty_room*"]
+
+[tool.setuptools.package-data]
+empty_room = [
+    "server/templates/*.html",
+    "server/static/**/*",
+    "data/*.xml"
+]

@@ -1,0 +1,1 @@
+"""Empty Room Test Suite."""
