@@ -3,7 +3,7 @@ Unit tests for cross-platform screen locker inspection.
 """
 
 import unittest
-from empty_room.locker import get_locker_info
+from core.locker import get_locker_info
 
 
 class TestLocker(unittest.TestCase):

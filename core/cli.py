@@ -1,5 +1,5 @@
 """
-Empty Room - Enterprise Command Line Interface.
+Empty Room - Smart Screen Lock Command Line Interface.
 Dispatches commands:
   empty-room run
   empty-room configure run
@@ -17,19 +17,19 @@ import sys
 import time
 from pathlib import Path
 
-from empty_room import __version__
-from empty_room.config import load_config
-from empty_room.constants import FOREGROUND_PID_FILE
-from empty_room.daemon import (
+from core import __version__
+from core.config import load_config
+from core.constants import FOREGROUND_PID_FILE
+from core.daemon import (
     is_shadow_running,
     start_shadow_daemon,
     stop_all,
     stop_shadow_daemon,
 )
-from empty_room.detector import start_detector
-from empty_room.face_engine import FaceEngine
-from empty_room.locker import get_locker_info
-from empty_room.server.app import run_server
+from core.detector import start_detector
+from core.face_engine import FaceEngine
+from core.locker import get_locker_info
+from core.server.app import run_server
 
 LOGO_ASCII = r"""
      +----------------------------------+
@@ -37,8 +37,7 @@ LOGO_ASCII = r"""
    |      +------------------------+      |
    |      |                        |      |
    |      |      EMPTY ROOM        |      |
-   |      |      PRESENCE          |      |
-   |      |      SENTINEL          |      |
+   |      |      SMART LOCK        |      |
    |      |                        |      |
    |      +------------------------+      |
     \                                    /
@@ -47,8 +46,7 @@ LOGO_ASCII = r"""
 
 
 def print_banner():
-    """Print the enterprise terminal banner."""
-    # Ensure stdout handles encoding gracefully on all platforms
+    """Print the terminal banner."""
     if hasattr(sys.stdout, "reconfigure"):
         try:
             sys.stdout.reconfigure(errors="replace")
@@ -56,8 +54,8 @@ def print_banner():
             pass
             
     print("\033[96m" + LOGO_ASCII + "\033[0m")
-    print(f" Empty Room -- Enterprise Workstation Presence Sentinel (v{__version__})")
-    print(" Protecting physical workstation security through vision intelligence.\n")
+    print(f" Empty Room -- Smart Screen Lock (v{__version__})")
+    print(" Automatically locks your screen when you walk away.\n")
 
 
 def cmd_run(args=None):
@@ -97,7 +95,7 @@ def cmd_configure(args=None):
     port = config.get("web_port", 5050)
     host = config.get("web_host", "127.0.0.1")
     
-    print(f"[*] Launching Empty Room Enterprise Configuration Portal...")
+    print(f"[*] Launching Empty Room Configuration Portal...")
     print(f"[*] Local endpoint: http://{host}:{port}")
     print(f"[*] Interactive face enrollment and parameter controls available.")
     print(f"[*] Opening your default browser...\n")
@@ -113,8 +111,8 @@ def cmd_shadow(subcommand: str):
         success, message = start_shadow_daemon()
         if success:
             print(f"\033[92m[+] {message}\033[0m")
-            print("    The detection sentinel is now active in the background.")
-            print("    It will continue protecting your workstation even when this terminal is closed.")
+            print("    The screen lock sentinel is now active in the background.")
+            print("    It will continue protecting your screen even when this terminal is closed.")
             print("    Run 'empty-room shadow off' or 'empty-room stop' to terminate.")
         else:
             print(f"\033[91m[X] {message}\033[0m")
@@ -237,7 +235,7 @@ def _daemon_worker():
         start_detector()
     except Exception:
         import traceback
-        from empty_room.constants import SHADOW_LOG_FILE
+        from core.constants import SHADOW_LOG_FILE
         with open(str(SHADOW_LOG_FILE), "a", encoding="utf-8") as f:
             f.write("\n--- DAEMON CRASH EXCEPTION ---\n")
             traceback.print_exc(file=f)

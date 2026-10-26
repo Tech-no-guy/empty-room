@@ -10,7 +10,7 @@ import threading
 from pathlib import Path
 from typing import Any, Dict
 
-from empty_room.constants import DEFAULT_CONFIG, get_config_path
+from core.constants import DEFAULT_CONFIG, get_config_path
 
 _lock = threading.Lock()
 _cached_config: Dict[str, Any] = {}

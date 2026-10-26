@@ -1,6 +1,6 @@
 """
 Empty Room - Legacy Registration Entrypoint (register.py).
-Maintained for backwards compatibility; uses enterprise FaceEngine.
+Maintained for backwards compatibility; uses secure FaceEngine.
 """
 
 import sys
@@ -8,8 +8,8 @@ import time
 import cv2
 import numpy as np
 
-from empty_room.constants import get_cascade_path
-from empty_room.face_engine import FaceEngine
+from core.constants import get_cascade_path
+from core.face_engine import FaceEngine
 
 
 def register_face():

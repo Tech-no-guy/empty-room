@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-from empty_room.constants import (
+from core.constants import (
     FOREGROUND_PID_FILE,
     SERVER_PID_FILE,
     SHADOW_LOG_FILE,
@@ -75,9 +75,9 @@ def start_shadow_daemon() -> Tuple[bool, str]:
     log_fd = os.open(str(SHADOW_LOG_FILE), os.O_WRONLY | os.O_CREAT | os.O_APPEND)
 
     python_exe = sys.executable
-    cmd = [python_exe, "-m", "empty_room.cli", "_daemon_worker"]
+    cmd = [python_exe, "-m", "core.cli", "_daemon_worker"]
 
-    from empty_room.constants import PROJECT_ROOT
+    from core.constants import PROJECT_ROOT
 
     env = os.environ.copy()
     current_pp = env.get("PYTHONPATH", "")

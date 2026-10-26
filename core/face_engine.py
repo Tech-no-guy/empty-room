@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
-from empty_room.constants import get_cascade_path, get_model_path
+from core.constants import get_cascade_path, get_model_path
 
 
 class FaceEngine:

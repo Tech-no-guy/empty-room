@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 import cv2
 import numpy as np
 
-from empty_room.config import load_config
+from core.config import load_config
 
 
 class CameraService:

@@ -1,9 +1,9 @@
 """
 Empty Room - Package Main Entrypoint.
-Allows running via `python -m empty_room`.
+Allows running via `python -m core`.
 """
 
-from empty_room.cli import main
+from core.cli import main
 
 if __name__ == "__main__":
     main()

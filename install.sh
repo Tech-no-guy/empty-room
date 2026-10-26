@@ -48,7 +48,7 @@ fi
 # 3. Copy/Link files
 echo "[3/4] Installing application core..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-if [ -d "$SCRIPT_DIR/empty_room" ]; then
+if [ -d "$SCRIPT_DIR/core" ]; then
   cp -r "$SCRIPT_DIR"/* "$APP_DIR" 2>/dev/null || true
 else
   # Clone or download if run via pipe
@@ -68,7 +68,7 @@ APP_DIR="$INSTALL_DIR/app"
 VENV_PYTHON="$INSTALL_DIR/venv/bin/python"
 
 export PYTHONPATH="$APP_DIR:$PYTHONPATH"
-exec "$VENV_PYTHON" -m empty_room.cli "$@"
+exec "$VENV_PYTHON" -m core.cli "$@"
 EOF
 
 chmod +x "$BIN_DIR/empty-room"

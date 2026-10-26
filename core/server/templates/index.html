@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empty Room — Smart Screen Lock</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-csrf="{{ csrf_token }}">
+  <!-- Compact Navigation Header -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="logo-circle" title="Empty Room Doorway">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Empty Room Logo" class="brand-logo" width="30" height="30">
+      </div>
+      <div class="brand-text">
+        <h1 class="brand-title">Empty Room</h1>
+        <span class="brand-sub">Smart Screen Lock</span>
+      </div>
+      <span class="badge-version">v1.0.0</span>
+    </div>
+
+    <div class="nav-controls">
+      <div class="live-status-pill" id="livePill">
+        <span class="pulse-dot"></span>
+        <span id="liveStatusText">CONNECTING</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- Top Grid: Sentinel Status & Biometric Profile -->
+    <div class="grid-2-col">
+      <!-- Status & Countdown Card -->
+      <section class="card status-card">
+        <div class="card-header">
+          <div class="header-left">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <h3>Protection Status</h3>
+          </div>
+          <span class="status-badge" id="stateBadge">CHECKING</span>
+        </div>
+
+        <div class="status-body">
+          <div class="countdown-row">
+            <div class="countdown-circle">
+              <svg class="progress-ring" width="84" height="84">
+                <circle class="progress-ring__bg" stroke-width="6" fill="transparent" r="36" cx="42" cy="42"/>
+                <circle class="progress-ring__circle" id="countdownCircle" stroke-width="6" stroke-dasharray="226" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" r="36" cx="42" cy="42"/>
+              </svg>
+              <div class="countdown-inner">
+                <span id="secondsLeftDisplay">--</span>
+                <small>sec</small>
+              </div>
+            </div>
+            <div class="countdown-details">
+              <h4 id="statusTitle">Monitoring</h4>
+              <p id="statusSubtitle">Camera active. Smart screen lock watching desk.</p>
+              <div class="chips-row">
+                <span class="mini-chip">Faces: <b id="faceCountDisplay">0</b></span>
+                <span class="mini-chip">Away: <b id="timeAwayDisplay">0.0s</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Biometric Profile Card (Real User Data Only) -->
+      <section class="card bio-card">
+        <div class="card-header">
+          <div class="header-left">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <h3>Face Registration</h3>
+          </div>
+          <span class="badge-bio" id="bioBadge">{{ 'Registered' if face_info.trained else 'No Face Registered' }}</span>
+        </div>
+
+        <div class="bio-body">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Samples</span>
+              <span class="meta-value" id="bioSampleCount">{{ face_info.samples_count if face_info.trained else 0 }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Enrolled On</span>
+              <span class="meta-value" id="bioEnrollDate">{{ face_info.enrolled_at[:10] if (face_info.trained and face_info.enrolled_at) else 'None' }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Match Mode</span>
+              <span class="meta-value" id="matchModeDisplay">{{ 'Registered Face' if config.strict_match else 'Any Person' }}</span>
+            </div>
+          </div>
+
+          <div class="bio-actions">
+            <button id="enrollFaceBtn" class="btn-primary btn-sm">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              <span>{{ 'Re-register Face' if face_info.trained else 'Register Face' }}</span>
+            </button>
+            <button id="deleteFaceBtn" class="btn-danger-outline btn-sm {{ '' if face_info.trained else 'hidden' }}" title="Delete registered face">
+              Remove
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- On-Demand Camera Preview Section (Off by Default for Maximum Efficiency) -->
+    <section class="card camera-section">
+      <div class="camera-bar">
+        <div class="camera-info">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+          <div>
+            <h4 class="camera-title">Camera Feed</h4>
+            <p class="camera-sub">Preview is off by default to minimize CPU and battery usage.</p>
+          </div>
+        </div>
+        <button id="toggleCameraBtn" class="btn-secondary btn-sm">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span id="cameraBtnText">Open Camera Preview</span>
+        </button>
+      </div>
+
+      <!-- Collapsible Video Feed Box (Hidden by default) -->
+      <div class="camera-preview-box hidden" id="cameraPreviewBox">
+        <div class="video-wrapper">
+          <img id="liveVideoImg" src="" alt="Webcam Video Stream" class="video-element">
+          <span class="video-tag" id="videoFpsTag">0 FPS</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Card & Form -->
+    <section class="card settings-card">
+      <div class="card-header">
+        <div class="header-left">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <h3>Lock Settings</h3>
+        </div>
+      </div>
+
+      <form id="settingsForm" class="settings-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div class="form-row">
+          <div class="row-text">
+            <label for="enabledToggle">Auto-Lock</label>
+            <span class="subtext">Automatically lock screen when you walk away</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="enabledToggle" name="enabled" {{ 'checked' if config.enabled }}>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-row">
+          <div class="row-text">
+            <label for="strictMatchToggle">Strict Match (Registered Face Only)</label>
+            <span class="subtext">Locks if another person sits at your desk</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="strictMatchToggle" name="strict_match" {{ 'checked' if config.strict_match }}>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-row-slider">
+          <div class="slider-header">
+            <label for="timeoutSlider">Lock Delay</label>
+            <span class="slider-val" id="timeoutValText">{{ config.timeout }}s</span>
+          </div>
+          <div class="slider-inputs">
+            <input type="range" id="timeoutSlider" min="3" max="120" step="1" value="{{ config.timeout }}" class="range-input">
+            <input type="number" id="timeoutInput" name="timeout" min="3" max="3600" value="{{ config.timeout }}" class="number-input">
+          </div>
+        </div>
+
+        <div class="form-row-slider">
+          <div class="slider-header">
+            <label for="confSlider">Strictness Threshold</label>
+            <span class="slider-val" id="confValText">{{ config.confidence_threshold }}</span>
+          </div>
+          <div class="slider-inputs">
+            <input type="range" id="confSlider" min="30" max="110" step="5" value="{{ config.confidence_threshold }}" class="range-input">
+            <input type="number" id="confInput" name="confidence_threshold" min="30" max="150" value="{{ config.confidence_threshold }}" class="number-input">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="row-text">
+            <label for="camSelect">Camera Device</label>
+            <span class="subtext">Select camera index</span>
+          </div>
+          <select id="camSelect" name="camera_index" class="select-input">
+            <option value="0" {{ 'selected' if config.camera_index == 0 }}>Camera 0 (Default)</option>
+            <option value="1" {{ 'selected' if config.camera_index == 1 }}>Camera 1</option>
+            <option value="2" {{ 'selected' if config.camera_index == 2 }}>Camera 2</option>
+          </select>
+        </div>
+
+        <div class="form-actions-bar">
+          <button type="button" id="testLockBtn" class="btn-secondary btn-sm">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Test Lock
+          </button>
+          <button type="submit" id="saveSettingsBtn" class="btn-primary btn-sm">
+            Save Settings
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Activity Log Section (Real User Data Only) -->
+    <section class="card log-card">
+      <div class="card-header">
+        <div class="header-left">
+          <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <h3>Activity Log</h3>
+        </div>
+        <button id="refreshLogsBtn" class="btn-text btn-xs">Refresh</button>
+      </div>
+      <div class="log-table-container">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th width="90">Time</th>
+              <th width="100">Category</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            <tr><td colspan="3" class="text-center text-muted">No activity recorded yet in this session.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Face Enrollment Modal -->
+  <div class="modal-overlay hidden" id="enrollModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Register Face Profile</h4>
+        <button id="closeEnrollModalBtn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-note">Look directly at your webcam while moving your head gently to sample angles.</p>
+        
+        <div class="enroll-reticle-box">
+          <div class="reticle"></div>
+          <div class="sample-count-badge" id="enrollSampleBadge">0 / 50 samples</div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="enrollProgressBar" style="width: 0%;"></div>
+          </div>
+          <span class="progress-status" id="enrollProgressText">Ready to start</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="cancelEnrollBtn" class="btn-secondary btn-sm">Cancel</button>
+        <button id="startCaptureBtn" class="btn-primary btn-sm">Start Registration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Lock Modal with 5s Cancel Abort -->
+  <div class="modal-overlay hidden" id="lockConfirmModal">
+    <div class="modal-card text-center">
+      <h4>Lock Screen Test</h4>
+      <p class="modal-note">Your computer will lock in <strong id="abortSeconds">5</strong> seconds.</p>
+      <div class="modal-actions justify-center">
+        <button id="abortLockBtn" class="btn-secondary btn-sm">Cancel</button>
+        <button id="instantLockBtn" class="btn-primary btn-sm">Lock Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-holder" id="toastContainer"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -7,8 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from empty_room.config import load_config, save_config, update_config, validate_config
-from empty_room.constants import DEFAULT_CONFIG
+from core.config import load_config, save_config, update_config, validate_config
+from core.constants import DEFAULT_CONFIG
 
 
 class TestConfig(unittest.TestCase):

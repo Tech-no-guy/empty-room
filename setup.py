@@ -13,7 +13,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "empty-room=empty_room.cli:main",
+            "empty-room=core.cli:main",
         ],
     },
 )

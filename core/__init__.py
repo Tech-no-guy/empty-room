@@ -1,5 +1,6 @@
 """
-Empty Room - Enterprise Workstation Presence Detection & Auto-Lock Daemon.
+Empty Room - Smart Screen Lock.
+Automatically locks your screen when you walk away.
 """
 
 __version__ = "1.0.0"

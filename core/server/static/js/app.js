@@ -1,5 +1,5 @@
 /**
- * Empty Room — Enterprise Frontend Controller
+ * Empty Room — Frontend Client Controller (Light Theme & Efficient)
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -13,23 +13,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const countdownCircle = document.getElementById("countdownCircle");
   const statusTitle = document.getElementById("statusTitle");
   const statusSubtitle = document.getElementById("statusSubtitle");
-  const fpsDisplay = document.getElementById("fpsDisplay");
   const faceCountDisplay = document.getElementById("faceCountDisplay");
+  const timeAwayDisplay = document.getElementById("timeAwayDisplay");
+
+  // Biometrics
   const bioBadge = document.getElementById("bioBadge");
   const bioSampleCount = document.getElementById("bioSampleCount");
   const bioEnrollDate = document.getElementById("bioEnrollDate");
   const matchModeDisplay = document.getElementById("matchModeDisplay");
-  const logsTableBody = document.getElementById("logsTableBody");
-  const toastContainer = document.getElementById("toastContainer");
+  const enrollFaceBtn = document.getElementById("enrollFaceBtn");
+  const deleteFaceBtn = document.getElementById("deleteFaceBtn");
 
-  // Stream controls
-  const liveFeedImg = document.getElementById("liveFeedImg");
-  const toggleStreamBtn = document.getElementById("toggleStreamBtn");
-  const streamPlaceholder = document.getElementById("streamPlaceholder");
-  const resumeStreamBtn = document.getElementById("resumeStreamBtn");
-  let isStreamActive = true;
+  // Camera preview controls (Off by default for efficiency)
+  const toggleCameraBtn = document.getElementById("toggleCameraBtn");
+  const cameraBtnText = document.getElementById("cameraBtnText");
+  const cameraPreviewBox = document.getElementById("cameraPreviewBox");
+  const liveVideoImg = document.getElementById("liveVideoImg");
+  const videoFpsTag = document.getElementById("videoFpsTag");
+  let isCameraOpen = false;
 
-  // Settings form elements
+  // Settings
   const settingsForm = document.getElementById("settingsForm");
   const enabledToggle = document.getElementById("enabledToggle");
   const strictMatchToggle = document.getElementById("strictMatchToggle");
@@ -39,10 +42,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const confSlider = document.getElementById("confSlider");
   const confInput = document.getElementById("confInput");
   const confValText = document.getElementById("confValText");
+  const camSelect = document.getElementById("camSelect");
 
-  // Enrollment elements
-  const enrollFaceBtn = document.getElementById("enrollFaceBtn");
-  const deleteFaceBtn = document.getElementById("deleteFaceBtn");
+  // Logs
+  const logsTableBody = document.getElementById("logsTableBody");
+  const refreshLogsBtn = document.getElementById("refreshLogsBtn");
+  const toastContainer = document.getElementById("toastContainer");
+
+  // Enrollment modal
   const enrollModal = document.getElementById("enrollModal");
   const closeEnrollModalBtn = document.getElementById("closeEnrollModalBtn");
   const cancelEnrollBtn = document.getElementById("cancelEnrollBtn");
@@ -51,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const enrollProgressBar = document.getElementById("enrollProgressBar");
   const enrollProgressText = document.getElementById("enrollProgressText");
 
-  // Lock test elements
+  // Lock test modal
   const testLockBtn = document.getElementById("testLockBtn");
   const lockConfirmModal = document.getElementById("lockConfirmModal");
   const abortLockBtn = document.getElementById("abortLockBtn");
@@ -59,10 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const abortSeconds = document.getElementById("abortSeconds");
   let lockAbortTimer = null;
 
-  // Ring Circumference: 2 * PI * 46 ≈ 289
-  const RING_CIRCUMFERENCE = 289;
+  // Circumference: 2 * PI * 36 ≈ 226
+  const RING_CIRCUMFERENCE = 226;
 
-  // Toast Helper
   function showToast(message, type = "info") {
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
@@ -70,19 +76,34 @@ document.addEventListener("DOMContentLoaded", () => {
     toastContainer.appendChild(toast);
     setTimeout(() => {
       toast.style.opacity = "0";
-      toast.style.transform = "translateX(40px)";
-      setTimeout(() => toast.remove(), 300);
-    }, 3500);
+      setTimeout(() => toast.remove(), 250);
+    }, 3000);
   }
 
-  // Synchronize Range Sliders & Number Inputs
+  // Camera preview toggle (On-demand)
+  if (toggleCameraBtn) {
+    toggleCameraBtn.addEventListener("click", () => {
+      isCameraOpen = !isCameraOpen;
+      if (isCameraOpen) {
+        cameraPreviewBox.classList.remove("hidden");
+        liveVideoImg.src = `/video_feed?t=${Date.now()}`;
+        cameraBtnText.textContent = "Close Preview";
+      } else {
+        cameraPreviewBox.classList.add("hidden");
+        liveVideoImg.src = "";
+        cameraBtnText.textContent = "Open Camera Preview";
+      }
+    });
+  }
+
+  // Sliders sync
   timeoutSlider.addEventListener("input", (e) => {
     timeoutInput.value = e.target.value;
-    timeoutValText.textContent = `${e.target.value} seconds`;
+    timeoutValText.textContent = `${e.target.value}s`;
   });
   timeoutInput.addEventListener("input", (e) => {
     timeoutSlider.value = e.target.value;
-    timeoutValText.textContent = `${e.target.value} seconds`;
+    timeoutValText.textContent = `${e.target.value}s`;
   });
 
   confSlider.addEventListener("input", (e) => {
@@ -102,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
       strict_match: strictMatchToggle.checked,
       timeout: parseInt(timeoutInput.value, 10),
       confidence_threshold: parseInt(confInput.value, 10),
-      camera_index: parseInt(document.getElementById("camSelect").value, 10)
+      camera_index: parseInt(camSelect.value, 10)
     };
 
     try {
@@ -116,45 +137,20 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const data = await res.json();
       if (data.success) {
-        showToast("Configuration saved successfully.", "success");
+        showToast("Settings saved.", "success");
       } else {
         showToast(data.error || "Failed to save settings.", "error");
       }
     } catch (err) {
-      showToast("Network error while saving settings.", "error");
+      showToast("Network error.", "error");
     }
   });
 
-  // Stream Toggle
-  function pauseStream() {
-    isStreamActive = false;
-    liveFeedImg.src = "";
-    liveFeedImg.classList.add("hidden");
-    streamPlaceholder.classList.remove("hidden");
-  }
-
-  function resumeStream() {
-    isStreamActive = true;
-    liveFeedImg.src = `/video_feed?t=${Date.now()}`;
-    liveFeedImg.classList.remove("hidden");
-    streamPlaceholder.classList.add("hidden");
-  }
-
-  if (toggleStreamBtn) {
-    toggleStreamBtn.addEventListener("click", () => {
-      if (isStreamActive) pauseStream();
-      else resumeStream();
-    });
-  }
-  if (resumeStreamBtn) {
-    resumeStreamBtn.addEventListener("click", resumeStream);
-  }
-
-  // Real-Time Telemetry Polling Loop
+  // Real telemetry loop
   async function pollStatus() {
     try {
       const res = await fetch("/api/status");
-      if (!res.ok) throw new Error("Status endpoint unavailable");
+      if (!res.ok) throw new Error("Offline");
       const data = await res.json();
       if (!data.success) return;
 
@@ -162,14 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const face = data.face;
       const enroll = data.enrollment;
 
-      // Telemetry pill
-      if (t.enabled) {
-        liveStatusText.textContent = t.state;
-      } else {
-        liveStatusText.textContent = "DISARMED";
-      }
+      liveStatusText.textContent = t.enabled ? t.state : "DISARMED";
 
-      // State Badge
+      // Badge
       stateBadge.className = "status-badge";
       if (!t.enabled) {
         stateBadge.classList.add("status-disabled");
@@ -179,19 +170,25 @@ document.addEventListener("DOMContentLoaded", () => {
         stateBadge.textContent = "USER PRESENT";
       } else if (t.state === "AWAY" || t.state === "WARNING") {
         stateBadge.classList.add("status-away");
-        stateBadge.textContent = "PRESENCE LOST";
+        stateBadge.textContent = "AWAY";
       } else if (t.state === "LOCKED") {
         stateBadge.classList.add("status-locked");
-        stateBadge.textContent = "SYSTEM LOCKED";
+        stateBadge.textContent = "LOCKED";
       } else {
         stateBadge.classList.add("status-disabled");
         stateBadge.textContent = t.state;
       }
 
-      // Countdown & Progress Ring
+      // Countdown
       const secLeft = t.seconds_remaining;
       secondsLeftDisplay.textContent = Math.ceil(secLeft);
       statusTitle.textContent = t.status_message;
+      faceCountDisplay.textContent = t.faces_detected || 0;
+      timeAwayDisplay.textContent = `${t.time_away || 0}s`;
+
+      if (isCameraOpen && videoFpsTag) {
+        videoFpsTag.textContent = `${t.camera_fps || 0} FPS`;
+      }
 
       const timeoutVal = Math.max(1, t.timeout);
       const ratio = Math.max(0, Math.min(1, secLeft / timeoutVal));
@@ -199,89 +196,92 @@ document.addEventListener("DOMContentLoaded", () => {
       countdownCircle.style.strokeDashoffset = offset;
 
       if (ratio > 0.4) {
-        countdownCircle.style.stroke = "var(--accent-success)";
+        countdownCircle.style.stroke = "var(--color-success)";
       } else if (ratio > 0.15) {
-        countdownCircle.style.stroke = "var(--accent-warning)";
+        countdownCircle.style.stroke = "var(--color-warning)";
       } else {
-        countdownCircle.style.stroke = "var(--accent-danger)";
+        countdownCircle.style.stroke = "var(--color-danger)";
       }
 
-      // FPS & Face count
-      fpsDisplay.textContent = `${t.camera_fps || 0} FPS`;
-      faceCountDisplay.textContent = t.faces_detected || 0;
+      // Real User Biometric Data (No demo or fake data)
+      if (face && face.trained) {
+        bioBadge.textContent = "Registered";
+        bioBadge.style.color = "var(--color-success)";
+        bioSampleCount.textContent = face.samples_count || 0;
+        bioEnrollDate.textContent = face.enrolled_at ? face.enrolled_at.slice(0, 10) : "Registered";
+        matchModeDisplay.textContent = t.strict_match ? "Registered Face" : "Any Person";
+        if (deleteFaceBtn) deleteFaceBtn.classList.remove("hidden");
+      } else {
+        bioBadge.textContent = "No Face Registered";
+        bioBadge.style.color = "var(--text-muted)";
+        bioSampleCount.textContent = "0";
+        bioEnrollDate.textContent = "None";
+        matchModeDisplay.textContent = "Any Person";
+        if (deleteFaceBtn) deleteFaceBtn.classList.add("hidden");
+      }
 
-      // Biometrics
-      bioBadge.textContent = face.trained ? "REGISTERED" : "UNREGISTERED";
-      bioBadge.style.color = face.trained ? "var(--accent-success)" : "var(--text-muted)";
-      bioSampleCount.textContent = face.samples_count || 0;
-      bioEnrollDate.textContent = face.enrolled_at ? face.enrolled_at.slice(0, 10) : "None";
-      matchModeDisplay.textContent = t.strict_match ? "Strict (Face ID)" : "Presence (Any)";
-
-      // Enrollment flow updater
+      // Enrollment Wizard progress
       if (enroll && enroll.in_progress) {
-        enrollSampleBadge.textContent = `Samples: ${enroll.collected} / ${enroll.target}`;
+        enrollSampleBadge.textContent = `${enroll.collected} / ${enroll.target} samples`;
         const pct = Math.round((enroll.collected / enroll.target) * 100);
         enrollProgressBar.style.width = `${pct}%`;
-        enrollProgressText.textContent = `Sampling frames (${pct}%)... Look at camera`;
+        enrollProgressText.textContent = `Sampling (${pct}%)... Look at camera`;
       } else if (enroll && enroll.status === "completed") {
         enrollProgressBar.style.width = "100%";
-        enrollProgressText.textContent = "Face enrolled & trained successfully!";
+        enrollProgressText.textContent = "Face registered successfully!";
         setTimeout(() => {
           enrollModal.classList.add("hidden");
-        }, 1500);
+          startCaptureBtn.disabled = false;
+          startCaptureBtn.textContent = "Start Registration";
+        }, 1200);
       }
-
-    } catch (err) {
+    } catch (e) {
       liveStatusText.textContent = "OFFLINE";
     }
   }
 
-  // Poll Activity Logs
+  // Poll Activity Logs (Real events only)
   async function pollLogs() {
     try {
       const res = await fetch("/api/logs");
       const data = await res.json();
-      if (!data.success || !data.logs) return;
+      if (!data.success || !data.logs || data.logs.length === 0) return;
 
-      if (data.logs.length === 0) return;
-
-      logsTableBody.innerHTML = data.logs.slice(0, 15).map(log => `
+      logsTableBody.innerHTML = data.logs.slice(0, 10).map(log => `
         <tr>
           <td>${log.time}</td>
           <td class="log-cat-${log.category}">${log.category}</td>
           <td>${log.message}</td>
         </tr>
       `).join("");
-    } catch (err) {
-      // Ignore background log fetch hiccups
-    }
+    } catch (e) {}
   }
 
-  // Poll timers
-  setInterval(pollStatus, 700);
-  setInterval(pollLogs, 2500);
+  // Poll every 1s
+  setInterval(pollStatus, 1000);
+  setInterval(pollLogs, 3000);
   pollStatus();
   pollLogs();
 
-  // Face Enrollment Modal Interactions
+  // Face Enrollment
   if (enrollFaceBtn) {
     enrollFaceBtn.addEventListener("click", () => {
       enrollProgressBar.style.width = "0%";
-      enrollProgressText.textContent = "Click 'Start Sampling' to begin biometric capture.";
-      enrollSampleBadge.textContent = "Samples: 0 / 50";
+      enrollProgressText.textContent = "Click 'Start Registration' when ready.";
+      enrollSampleBadge.textContent = "0 / 50 samples";
       enrollModal.classList.remove("hidden");
     });
   }
 
-  const hideEnrollModal = () => enrollModal.classList.add("hidden");
-  if (closeEnrollModalBtn) closeEnrollModalBtn.addEventListener("click", hideEnrollModal);
-  if (cancelEnrollBtn) cancelEnrollBtn.addEventListener("click", hideEnrollModal);
+  const hideEnroll = () => enrollModal.classList.add("hidden");
+  if (closeEnrollModalBtn) closeEnrollModalBtn.addEventListener("click", hideEnroll);
+  if (cancelEnrollBtn) cancelEnrollBtn.addEventListener("click", hideEnroll);
 
   if (startCaptureBtn) {
     startCaptureBtn.addEventListener("click", async () => {
       startCaptureBtn.disabled = true;
-      startCaptureBtn.textContent = "Sampling...";
-      enrollProgressText.textContent = "Acquiring webcam frames...";
+      startCaptureBtn.textContent = "Capturing...";
+      enrollProgressText.textContent = "Connecting camera...";
 
       try {
         const res = await fetch("/api/face/enroll/start", {
@@ -290,22 +290,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         const data = await res.json();
         if (!data.success) {
-          showToast(data.error || "Failed to start enrollment.", "error");
+          showToast(data.error || "Failed to start capture.", "error");
           startCaptureBtn.disabled = false;
-          startCaptureBtn.textContent = "Start Sampling";
+          startCaptureBtn.textContent = "Start Registration";
         }
-      } catch (err) {
-        showToast("Error starting enrollment session.", "error");
+      } catch (e) {
+        showToast("Error starting capture.", "error");
         startCaptureBtn.disabled = false;
-        startCaptureBtn.textContent = "Start Sampling";
+        startCaptureBtn.textContent = "Start Registration";
       }
     });
   }
 
-  // Delete Face Biometric
+  // Delete Face
   if (deleteFaceBtn) {
     deleteFaceBtn.addEventListener("click", async () => {
-      if (!confirm("Are you sure you want to delete your enrolled face model? System will switch to standard presence detection.")) {
+      if (!confirm("Delete your registered face profile? The lock will use standard presence detection.")) {
         return;
       }
       try {
@@ -315,32 +315,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         const data = await res.json();
         if (data.success) {
-          showToast("Biometric profile removed.", "info");
-          setTimeout(() => location.reload(), 800);
-        } else {
-          showToast("Failed to delete profile.", "error");
+          showToast("Face profile removed.", "info");
+          setTimeout(() => location.reload(), 600);
         }
-      } catch (err) {
-        showToast("Network error deleting face profile.", "error");
+      } catch (e) {
+        showToast("Error deleting profile.", "error");
       }
     });
   }
 
-  // Test Lock Safety Mechanism with 5-Second Cancel Countdown
+  // Test Lock
   if (testLockBtn) {
     testLockBtn.addEventListener("click", () => {
-      let countdown = 5;
-      abortSeconds.textContent = countdown;
+      let count = 5;
+      abortSeconds.textContent = count;
       lockConfirmModal.classList.remove("hidden");
 
       clearInterval(lockAbortTimer);
-      lockAbortTimer = setInterval(async () => {
-        countdown--;
-        abortSeconds.textContent = countdown;
-        if (countdown <= 0) {
+      lockAbortTimer = setInterval(() => {
+        count--;
+        abortSeconds.textContent = count;
+        if (count <= 0) {
           clearInterval(lockAbortTimer);
           lockConfirmModal.classList.add("hidden");
-          executeTestLock();
+          executeLock();
         }
       }, 1000);
     });
@@ -350,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
     abortLockBtn.addEventListener("click", () => {
       clearInterval(lockAbortTimer);
       lockConfirmModal.classList.add("hidden");
-      showToast("Lock test aborted.", "info");
+      showToast("Test cancelled.", "info");
     });
   }
 
@@ -358,11 +356,11 @@ document.addEventListener("DOMContentLoaded", () => {
     instantLockBtn.addEventListener("click", () => {
       clearInterval(lockAbortTimer);
       lockConfirmModal.classList.add("hidden");
-      executeTestLock();
+      executeLock();
     });
   }
 
-  async function executeTestLock() {
+  async function executeLock() {
     try {
       const res = await fetch("/api/test-lock", {
         method: "POST",
@@ -370,17 +368,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const data = await res.json();
       if (data.success) {
-        showToast("Workstation lock command sent.", "success");
+        showToast("Screen locked.", "success");
       } else {
-        showToast("Failed to lock screen: " + data.message, "error");
+        showToast("Lock command failed: " + data.message, "error");
       }
-    } catch (err) {
-      showToast("Error triggering lock test.", "error");
+    } catch (e) {
+      showToast("Error triggering lock.", "error");
     }
   }
 
-  const refreshLogsBtn = document.getElementById("refreshLogsBtn");
-  if (refreshLogsBtn) {
-    refreshLogsBtn.addEventListener("click", pollLogs);
-  }
+  if (refreshLogsBtn) refreshLogsBtn.addEventListener("click", pollLogs);
 });

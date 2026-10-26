@@ -1,5 +1,5 @@
 # ==============================================================================
-# Empty Room — Enterprise PowerShell One-Liner Installer (iex compatible)
+# Empty Room — Smart Screen Lock PowerShell Installer (iex compatible)
 # Usage:
 #   irm https://raw.githubusercontent.com/empty-room/empty-room/main/install.ps1 | iex
 # or locally:
@@ -10,8 +10,8 @@ $ErrorActionPreference = 'Stop'
 
 Write-Host ""
 Write-Host "  =======================================================" -ForegroundColor Cyan
-Write-Host "     EMPTY ROOM - WORKSTATION PRESENCE SENTINEL" -ForegroundColor Cyan
-Write-Host "     Enterprise Automated Installer" -ForegroundColor Cyan
+Write-Host "     EMPTY ROOM - SMART SCREEN LOCK" -ForegroundColor Cyan
+Write-Host "     Automated Installer" -ForegroundColor Cyan
 Write-Host "  =======================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -50,7 +50,7 @@ if (-not $CurrentScriptDir -and $MyInvocation.MyCommand.Path) {
     $CurrentScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 }
 
-if ($CurrentScriptDir -and (Test-Path (Join-Path $CurrentScriptDir "empty_room"))) {
+if ($CurrentScriptDir -and (Test-Path (Join-Path $CurrentScriptDir "core"))) {
     Write-Host "      Detected local source directory. Linking application files..." -ForegroundColor Gray
     Copy-Item -Recurse -Force -Path (Join-Path $CurrentScriptDir "*") -Destination $AppDir
 } else {
@@ -94,12 +94,12 @@ $Ps1ShimPath = Join-Path $BinDir "empty-room.ps1"
 $CmdShimContent = @"
 @echo off
 set "PYTHONPATH=$AppDir;%PYTHONPATH%"
-"$VenvPython" -m empty_room.cli %*
+"$VenvPython" -m core.cli %*
 "@
 
 $Ps1ShimContent = @"
 `$env:PYTHONPATH = "$AppDir;" + `$env:PYTHONPATH
-& "$VenvPython" -m empty_room.cli `$args
+& "$VenvPython" -m core.cli `$args
 "@
 
 [System.IO.File]::WriteAllText($CmdShimPath, $CmdShimContent)

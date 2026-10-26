@@ -5,16 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "empty-room"
 version = "1.0.0"
-description = "Enterprise workstation presence detection and auto-lock sentinel."
+description = "Smart screen lock that automatically secures your computer when you walk away."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Empty Room Contributors" }]
 requires-python = ">=3.8"
-keywords = ["security", "presence-detection", "auto-lock", "computer-vision", "face-recognition"]
+keywords = ["security", "presence-detection", "auto-lock", "computer-vision", "smart-screen-lock"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Developers",
-    "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -35,13 +35,13 @@ dependencies = [
 ]
 
 [project.scripts]
-empty-room = "empty_room.cli:main"
+empty-room = "core.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["empty_room*"]
+include = ["core*"]
 
 [tool.setuptools.package-data]
-empty_room = [
+core = [
     "server/templates/*.html",
     "server/static/**/*",
     "data/*.xml"

@@ -1,6 +1,6 @@
 # Security Policy
 
-Empty Room is designed with enterprise-grade privacy and zero-trust workstation security principles.
+Empty Room is designed with secure, local-first privacy and zero-trust security principles.
 
 ## Security Architecture & Guarantees
 

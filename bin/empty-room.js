@@ -70,7 +70,7 @@ function main() {
     PYTHONPATH: [rootDir, process.env.PYTHONPATH || ''].filter(Boolean).join(path.delimiter)
   });
 
-  const child = spawn(pythonPath, ['-m', 'empty_room.cli', ...args], {
+  const child = spawn(pythonPath, ['-m', 'core.cli', ...args], {
     stdio: 'inherit',
     env: env,
     cwd: process.cwd()

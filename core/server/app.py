@@ -1,5 +1,5 @@
 """
-Empty Room - Enterprise Configuration Web Application.
+Empty Room - Smart Screen Lock Configuration Web Application.
 Provides secure localhost REST API, live camera stream, face enrollment,
 and dashboard interface.
 """
@@ -14,12 +14,12 @@ from typing import Generator
 import cv2
 from flask import Flask, Response, jsonify, render_template, request
 
-from empty_room.camera import CameraService
-from empty_room.config import load_config, save_config, update_config
-from empty_room.constants import SERVER_PID_FILE, get_cascade_path
-from empty_room.detector import get_detector
-from empty_room.face_engine import FaceEngine
-from empty_room.locker import lock_workstation
+from core.camera import CameraService
+from core.config import load_config, save_config, update_config
+from core.constants import SERVER_PID_FILE, get_cascade_path
+from core.detector import get_detector
+from core.face_engine import FaceEngine
+from core.locker import lock_workstation
 
 # Base template and static paths
 TEMPLATE_DIR = Path(__file__).parent / "templates"
@@ -47,7 +47,7 @@ _enrollment_state = {
 
 @app.after_request
 def set_security_headers(response):
-    """Enforce enterprise security headers."""
+    """Enforce strict security headers."""
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
@@ -313,3 +313,8 @@ def run_server(host: str = "127.0.0.1", port: int = 5050, open_browser: bool = F
         app.run(host=host, port=port, debug=False, use_reloader=False)
     finally:
         SERVER_PID_FILE.unlink(missing_ok=True)
+
+
+if __name__ == "__main__":
+    cfg = load_config()
+    run_server(host=cfg.get("web_host", "127.0.0.1"), port=cfg.get("web_port", 5050), open_browser=False)

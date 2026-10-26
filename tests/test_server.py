@@ -4,7 +4,7 @@ Unit and integration tests for the Flask configuration server.
 
 import json
 import unittest
-from empty_room.server.app import app, CSRF_TOKEN
+from core.server.app import app, CSRF_TOKEN
 
 
 class TestServer(unittest.TestCase):
@@ -17,8 +17,8 @@ class TestServer(unittest.TestCase):
         res = self.client.get("/")
         self.assertEqual(res.status_code, 200)
         html = res.data.decode("utf-8")
-        self.assertIn("EMPTY ROOM", html)
-        self.assertIn("Presence Sentinel", html)
+        self.assertIn("Empty Room", html)
+        self.assertIn("Smart Screen Lock", html)
         self.assertIn("logo.svg", html)
 
     def test_security_headers(self):

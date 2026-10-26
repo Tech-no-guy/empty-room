@@ -1,7 +1,7 @@
 {
   "name": "empty-room",
   "version": "1.0.0",
-  "description": "Enterprise workstation presence detection and auto-lock sentinel.",
+  "description": "Smart screen lock that automatically secures your computer when you walk away.",
   "main": "./bin/empty-room.js",
   "bin": {
     "empty-room": "./bin/empty-room.js"
@@ -13,13 +13,12 @@
     "test": "python -m unittest discover -s tests"
   },
   "keywords": [
-    "presence-detection",
-    "workstation-security",
+    "smart-screen-lock",
     "auto-lock",
+    "presence-lock",
     "computer-vision",
     "face-recognition",
-    "enterprise-security",
-    "sentinel"
+    "security"
   ],
   "author": "Empty Room Contributors",
   "license": "MIT",
@@ -32,7 +31,7 @@
   },
   "files": [
     "bin",
-    "empty_room",
+    "core",
     "data",
     "assets",
     "requirements.txt",

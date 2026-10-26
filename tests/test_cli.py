@@ -4,7 +4,7 @@ Unit tests for CLI routing.
 
 import unittest
 from unittest.mock import patch
-from empty_room.cli import main
+from core.cli import main
 
 
 class TestCLI(unittest.TestCase):

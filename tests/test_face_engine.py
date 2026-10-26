@@ -4,7 +4,7 @@ Unit tests for face engine and synthetic biometric training.
 
 import unittest
 import numpy as np
-from empty_room.face_engine import FaceEngine
+from core.face_engine import FaceEngine
 
 
 class TestFaceEngine(unittest.TestCase):
