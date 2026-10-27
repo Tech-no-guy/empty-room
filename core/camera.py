@@ -31,7 +31,7 @@ class CameraService:
         self.last_frame: Optional[np.ndarray] = None
         self.last_frame_time: float = 0.0
         self.thread: Optional[threading.Thread] = None
-        self._frame_lock = threading.Lock()
+        self._frame_lock = threading.RLock()
         self.fps: float = 0.0
         self._frame_count: int = 0
         self._fps_start: float = time.time()
@@ -50,7 +50,9 @@ class CameraService:
             if self.is_running and self.cap is not None and self.active_camera_index == camera_index:
                 return True
 
-            self.stop()
+        self.stop()
+
+        with self._frame_lock:
             self.active_camera_index = camera_index
             
             # Open video capture with OS-appropriate backend (CAP_DSHOW on Windows for instant capture)

@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "timeout": 20,
-  "strict_match": true,
+  "strict_match": false,
   "confidence_threshold": 70,
   "camera_index": 0,
   "frame_skip": 5,

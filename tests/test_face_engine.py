@@ -2,7 +2,9 @@
 Unit tests for face engine and synthetic biometric training.
 """
 
+import tempfile
 import unittest
+from pathlib import Path
 import numpy as np
 from core.face_engine import FaceEngine
 
@@ -10,7 +12,12 @@ from core.face_engine import FaceEngine
 class TestFaceEngine(unittest.TestCase):
 
     def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
         self.engine = FaceEngine()
+        self.engine.model_path = Path(self.temp_dir.name) / "face_model.yml"
+
+    def tearDown(self):
+        self.temp_dir.cleanup()
 
     def test_detect_faces_empty_canvas(self):
         blank = np.zeros((240, 320), dtype=np.uint8)
