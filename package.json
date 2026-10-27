@@ -1,6 +1,6 @@
 {
   "name": "empty-room",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Smart screen lock that automatically secures your computer when you walk away.",
   "main": "./bin/empty-room.js",
   "bin": {
