@@ -57,6 +57,45 @@ function resolvePython() {
     }
   }
 
+  // If no Python environment has dependencies installed, attempt auto-bootstrap into ~/.empty-room/venv
+  const defaultVenvDir = path.join(userHome, '.empty-room', 'venv');
+  const defaultVenvPython = isWindows
+    ? path.join(defaultVenvDir, 'Scripts', 'python.exe')
+    : path.join(defaultVenvDir, 'bin', 'python');
+  const defaultVenvPip = isWindows
+    ? path.join(defaultVenvDir, 'Scripts', 'pip.exe')
+    : path.join(defaultVenvDir, 'bin', 'pip');
+
+  if (fallback) {
+    try {
+      console.log('\x1b[36m[Empty Room] Python vision dependencies not found. Setting up environment...\x1b[0m');
+      if (!fs.existsSync(defaultVenvPython)) {
+        console.log(`[Empty Room] Creating virtual environment in ${defaultVenvDir}...`);
+        fs.mkdirSync(path.join(userHome, '.empty-room'), { recursive: true });
+        spawnSync(fallback, ['-m', 'venv', defaultVenvDir], { stdio: 'inherit' });
+      }
+      if (fs.existsSync(defaultVenvPython)) {
+        console.log('[Empty Room] Installing opencv-contrib-python, flask, and numpy (~30s)...');
+        const reqPath = path.join(rootDir, 'requirements.txt');
+        const pipArgs = fs.existsSync(reqPath)
+          ? ['install', '-r', reqPath]
+          : ['install', 'opencv-contrib-python>=4.8.0', 'numpy>=1.24.0', 'Flask>=3.0.0'];
+        spawnSync(defaultVenvPip, pipArgs, { stdio: 'inherit' });
+
+        const recheck = spawnSync(defaultVenvPython, ['-c', 'import cv2, flask, numpy; print("READY")'], {
+          encoding: 'utf-8',
+          stdio: ['ignore', 'pipe', 'ignore']
+        });
+        if (recheck.status === 0 && recheck.stdout.trim() === 'READY') {
+          console.log('\x1b[32m[Empty Room] Environment initialized successfully!\x1b[0m\n');
+          return defaultVenvPython;
+        }
+      }
+    } catch (e) {
+      console.warn('\x1b[33m[Empty Room] Auto-setup notice:\x1b[0m', e.message);
+    }
+  }
+
   return fallback;
 }
 
