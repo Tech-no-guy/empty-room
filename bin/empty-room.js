@@ -109,7 +109,12 @@ function main() {
     PYTHONPATH: [rootDir, process.env.PYTHONPATH || ''].filter(Boolean).join(path.delimiter)
   });
 
-  const child = spawn(pythonPath, ['-m', 'core.cli', ...args], {
+  const isTest = args[0] === 'test';
+  const pyArgs = isTest
+    ? ['-m', 'unittest', 'discover', '-s', path.join(rootDir, 'tests'), ...args.slice(1)]
+    : ['-m', 'core.cli', ...args];
+
+  const child = spawn(pythonPath, pyArgs, {
     stdio: 'inherit',
     env: env,
     cwd: process.cwd()

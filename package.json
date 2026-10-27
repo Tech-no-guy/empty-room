@@ -10,7 +10,7 @@
     "start": "node ./bin/empty-room.js run",
     "configure": "node ./bin/empty-room.js configure run",
     "stop": "node ./bin/empty-room.js stop",
-    "test": "python -m unittest discover -s tests"
+    "test": "node bin/empty-room.js test"
   },
   "keywords": [
     "smart-screen-lock",
