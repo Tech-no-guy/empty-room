@@ -41,6 +41,10 @@ class CameraService:
         config = load_config()
         if camera_index is None:
             camera_index = config.get("camera_index", 0)
+        try:
+            camera_index = int(camera_index)
+        except (ValueError, TypeError):
+            camera_index = 0
 
         with self._frame_lock:
             if self.is_running and self.cap is not None and self.active_camera_index == camera_index:
@@ -55,12 +59,13 @@ class CameraService:
 
             self.cap = cv2.VideoCapture(camera_index, backend)
             if not self.cap.isOpened():
-                # Try fallback default index 0 or standard backend
-                if camera_index != 0:
+                # Try standard backend if CAP_DSHOW fails
+                self.cap = cv2.VideoCapture(camera_index)
+                if not self.cap.isOpened() and camera_index != 0:
                     self.cap = cv2.VideoCapture(0, backend)
+                    if not self.cap.isOpened():
+                        self.cap = cv2.VideoCapture(0)
                     self.active_camera_index = 0
-                if not self.cap.isOpened():
-                    self.cap = cv2.VideoCapture(camera_index)
 
             if not self.cap or not self.cap.isOpened():
                 print(f"[CAMERA] Unable to open camera device {camera_index}")
@@ -110,10 +115,6 @@ class CameraService:
     def stop(self):
         """Stop background capture and release the webcam hardware."""
         self.is_running = False
-        if self.thread and self.thread.is_alive():
-            self.thread.join(timeout=1.0)
-            self.thread = None
-
         with self._frame_lock:
             if self.cap is not None:
                 try:
@@ -123,3 +124,7 @@ class CameraService:
                 self.cap = None
             self.last_frame = None
             self.fps = 0.0
+
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=1.0)
+            self.thread = None

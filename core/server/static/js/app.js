@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const enrollSampleBadge = document.getElementById("enrollSampleBadge");
   const enrollProgressBar = document.getElementById("enrollProgressBar");
   const enrollProgressText = document.getElementById("enrollProgressText");
+  const enrollVideoImg = document.getElementById("enrollVideoImg");
 
   // Lock test modal
   const testLockBtn = document.getElementById("testLockBtn");
@@ -230,10 +231,14 @@ document.addEventListener("DOMContentLoaded", () => {
         enrollProgressBar.style.width = "100%";
         enrollProgressText.textContent = "Face registered successfully!";
         setTimeout(() => {
-          enrollModal.classList.add("hidden");
+          hideEnroll();
           startCaptureBtn.disabled = false;
           startCaptureBtn.textContent = "Start Registration";
         }, 1200);
+      } else if (enroll && enroll.status === "failed") {
+        enrollProgressText.textContent = enroll.error || "Enrollment failed. Try again.";
+        startCaptureBtn.disabled = false;
+        startCaptureBtn.textContent = "Retry Registration";
       }
     } catch (e) {
       liveStatusText.textContent = "OFFLINE";
@@ -269,11 +274,19 @@ document.addEventListener("DOMContentLoaded", () => {
       enrollProgressBar.style.width = "0%";
       enrollProgressText.textContent = "Click 'Start Registration' when ready.";
       enrollSampleBadge.textContent = "0 / 50 samples";
+      if (enrollVideoImg) {
+        enrollVideoImg.src = `/video_feed?t=${Date.now()}`;
+      }
       enrollModal.classList.remove("hidden");
     });
   }
 
-  const hideEnroll = () => enrollModal.classList.add("hidden");
+  const hideEnroll = () => {
+    enrollModal.classList.add("hidden");
+    if (enrollVideoImg) {
+      enrollVideoImg.src = "";
+    }
+  };
   if (closeEnrollModalBtn) closeEnrollModalBtn.addEventListener("click", hideEnroll);
   if (cancelEnrollBtn) cancelEnrollBtn.addEventListener("click", hideEnroll);
 

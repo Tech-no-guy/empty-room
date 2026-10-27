@@ -2,7 +2,7 @@
   "enabled": true,
   "timeout": 20,
   "strict_match": true,
-  "confidence_threshold": 75,
+  "confidence_threshold": 70,
   "camera_index": 0,
   "frame_skip": 5,
   "resolution_width": 320,

@@ -158,6 +158,7 @@ def _perform_enrollment_task():
     
     if not camera.is_running:
         camera.start()
+        time.sleep(0.3)
 
     engine = FaceEngine()
     cascade = cv2.CascadeClassifier(get_cascade_path())
@@ -174,15 +175,17 @@ def _perform_enrollment_task():
             continue
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5, minSize=(60, 60))
+        faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(30, 30))
 
-        if len(faces) == 1:
-            (x, y, w, h) = faces[0]
+        if len(faces) >= 1:
+            # Pick largest detected face (closest user to webcam)
+            largest = max(faces, key=lambda b: b[2] * b[3])
+            (x, y, w, h) = largest
             face_crop = gray[y:y+h, x:x+w]
             samples.append(face_crop)
             _enrollment_state["collected"] = len(samples)
 
-        time.sleep(0.08)
+        time.sleep(0.06)
 
     if len(samples) >= 20:
         _enrollment_state["status"] = "training"
