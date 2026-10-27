@@ -4,7 +4,7 @@
   "description": "Smart screen lock that automatically secures your computer when you walk away.",
   "main": "./bin/empty-room.js",
   "bin": {
-    "empty-room": "./bin/empty-room.js"
+    "empty-room": "bin/empty-room.js"
   },
   "scripts": {
     "start": "node ./bin/empty-room.js run",
@@ -24,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Tech-no-guy/empty-room.git"
+    "url": "git+https://github.com/Tech-no-guy/empty-room.git"
   },
   "engines": {
     "node": ">=16.0.0"
